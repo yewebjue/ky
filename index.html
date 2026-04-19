@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="科软考研">
+<meta name="theme-color" content="#0A0A12">
+<title>科软考研 · 学习时长追踪</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --p:   #6B2D8B;
+  --p2:  #8E44AD;
+  --p3:  #B07CC6;
+  --p4:  #D4A8E8;
+  --gold:#E8B94F;
+  --cyan:#48CAE4;
+  --red: #E74C3C;
+  --green:#2ECC71;
+  --bg:  #0A0A12;
+  --bg2: #111120;
+  --bg3: #181828;
+  --bg4: #1E1E32;
+  --bg5: #252540;
+  --card:#141424;
+  --bdr: rgba(107,45,139,0.25);
+  --bdr2:rgba(107,45,139,0.12);
+  --txt: #E8E4F0;
+  --txt2:#A89BC2;
+  --txt3:#6B5F85;
+  --r:   6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:'Noto Serif SC',serif;
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 800px 500px at 20% 10%, rgba(107,45,139,0.07) 0%,transparent 70%),
+    radial-gradient(ellipse 600px 800px at 80% 80%, rgba(107,45,139,0.05) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 24px 80px;}
+
+/* ── HEADER ── */
+.hero{padding:52px 0 36px;text-align:center;position:relative;}
+.hero::after{content:'';display:block;width:60px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--p3),transparent);margin:20px auto 0;}
+.badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:3px;text-transform:uppercase;color:var(--p3);
+  border:1px solid var(--bdr);padding:5px 18px;border-radius:20px;
+  background:rgba(107,45,139,0.1);margin-bottom:20px;}
+.hero h1{font-size:clamp(26px,5vw,48px);font-weight:900;line-height:1.15;
+  background:linear-gradient(135deg,var(--p4),var(--p3),var(--txt));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero h1 em{background:linear-gradient(135deg,var(--gold),#f5d78a);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-style:normal;}
+.hero-sub{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--txt3);letter-spacing:2px;}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px;}
+@media(max-width:600px){.kpi-strip{grid-template-columns:repeat(2,1fr);}}
+.kpi{background:var(--card);border:1px solid var(--bdr2);border-radius:var(--r);
+  padding:20px 18px;text-align:center;transition:border-color .2s;}
+.kpi:hover{border-color:var(--bdr);}
+.kpi-n{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;
+  color:var(--p3);line-height:1;}
+.kpi-n sup{font-size:0.4em;color:var(--txt3);}
+.kpi-n.gold{color:var(--gold);}
+.kpi-n.cyan{color:var(--cyan);}
+.kpi-n.red{color:var(--red);}
+.kpi-l{font-size:11px;color:var(--txt3);margin-top:7px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;}
+
+/* ── PROGRESS OVERALL ── */
+.overall-prog{background:var(--card);border:1px solid var(--bdr2);border-radius:var(--r);
+  padding:20px 24px;margin-bottom:36px;}
+.prog-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.prog-title{font-size:13px;color:var(--txt2);}
+.prog-vals{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--p3);}
+.prog-bar-bg{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.prog-bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.16,1,.3,1);}
+
+/* ── MONTHS ACCORDION ── */
+.months-wrap{display:flex;flex-direction:column;gap:12px;}
+
+.month-block{background:var(--card);border:1px solid var(--bdr2);border-radius:var(--r);overflow:hidden;transition:border-color .2s;}
+.month-block.open{border-color:var(--bdr);}
+
+.month-header{
+  display:flex;align-items:center;gap:16px;
+  padding:18px 22px;cursor:pointer;
+  transition:background .15s;user-select:none;
+}
+.month-header:hover{background:rgba(107,45,139,0.06);}
+.month-arrow{font-size:12px;color:var(--txt3);transition:transform .25s;flex-shrink:0;}
+.month-block.open .month-arrow{transform:rotate(90deg);}
+.month-name{font-size:16px;font-weight:600;min-width:40px;}
+.month-phase-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;padding:3px 8px;border-radius:3px;flex-shrink:0;}
+.month-phase-tag.pre{background:rgba(72,202,228,0.15);color:var(--cyan);}
+.month-phase-tag.spring{background:rgba(176,124,198,0.15);color:var(--p3);}
+.month-phase-tag.summer{background:rgba(232,185,79,0.15);color:var(--gold);}
+.month-phase-tag.autumn{background:rgba(142,68,173,0.15);color:var(--p2);}
+.month-stats{margin-left:auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.mstat{text-align:right;}
+.mstat-v{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--p3);}
+.mstat-v.actual{color:var(--green);}
+.mstat-l{font-size:10px;color:var(--txt3);font-family:'JetBrains Mono',monospace;}
+.month-mini-bar{width:80px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;flex-shrink:0;}
+.month-mini-fill{height:100%;border-radius:3px;}
+
+/* ── MONTH BODY ── */
+.month-body{display:none;padding:0 16px 16px;}
+.month-block.open .month-body{display:block;}
+
+/* ── WEEKS INSIDE MONTH ── */
+.weeks-wrap{display:flex;flex-direction:column;gap:10px;}
+
+.week-block{background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--r);overflow:hidden;}
+.week-block.open{border-color:rgba(107,45,139,0.35);}
+
+.week-header{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 18px;cursor:pointer;
+  transition:background .15s;user-select:none;
+}
+.week-header:hover{background:rgba(107,45,139,0.07);}
+.week-arrow{font-size:11px;color:var(--txt3);transition:transform .25s;flex-shrink:0;}
+.week-block.open .week-arrow{transform:rotate(90deg);}
+.week-label{font-size:13px;font-weight:600;color:var(--txt2);}
+.week-stats{margin-left:auto;display:flex;align-items:center;gap:16px;}
+.wstat-v{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--p3);}
+.wstat-v.actual{color:var(--green);}
+.wstat-l{font-size:10px;color:var(--txt3);font-family:'JetBrains Mono',monospace;}
+
+/* ── WEEK BODY ── */
+.week-body{display:none;padding:0 14px 14px;}
+.week-block.open .week-body{display:block;}
+
+/* ── DAYS TABLE ── */
+.days-table{width:100%;border-collapse:collapse;}
+.days-table th{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--txt3);padding:8px 10px;
+  border-bottom:1px solid var(--bdr2);text-align:left;
+}
+.days-table td{padding:8px 10px;border-bottom:1px solid rgba(107,45,139,0.06);vertical-align:middle;}
+.days-table tr:last-child td{border-bottom:none;}
+.days-table tr:hover td{background:rgba(107,45,139,0.04);}
+
+.day-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--txt2);white-space:nowrap;}
+.day-wd{font-size:11px;color:var(--txt3);margin-left:6px;}
+.day-plan{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--p3);}
+.day-actual-wrap{display:flex;align-items:center;gap:8px;}
+.day-actual-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--green);min-width:50px;}
+.day-actual-val.empty{color:var(--txt3);}
+.day-note-preview{font-size:11px;color:var(--txt3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.day-diff{font-family:'JetBrains Mono',monospace;font-size:11px;}
+.day-diff.pos{color:var(--green);}
+.day-diff.neg{color:var(--red);}
+.day-diff.zero{color:var(--txt3);}
+
+/* ── RECORD BTN ── */
+.btn-record{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;
+  padding:4px 12px;border-radius:3px;cursor:pointer;
+  background:rgba(107,45,139,0.2);border:1px solid var(--bdr);
+  color:var(--p3);transition:all .15s;white-space:nowrap;
+}
+.btn-record:hover{background:rgba(107,45,139,0.4);border-color:var(--p3);}
+.btn-record.recorded{background:rgba(46,204,113,0.15);border-color:rgba(46,204,113,0.4);color:var(--green);}
+
+/* ── MODAL ── */
+.modal-backdrop{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);z-index:1000;
+  align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+.modal-backdrop.show{display:flex;}
+.modal{
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;
+  width:min(500px,90vw);box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px);}to{opacity:1;transform:none;}}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px 16px;border-bottom:1px solid var(--bdr2);
+}
+.modal-title{font-size:16px;font-weight:700;}
+.modal-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--txt3);margin-top:4px;}
+.modal-close{font-size:20px;cursor:pointer;color:var(--txt3);background:none;border:none;padding:4px;transition:color .15s;}
+.modal-close:hover{color:var(--txt);}
+.modal-body{padding:22px 24px;}
+.form-group{margin-bottom:18px;}
+.form-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--txt3);margin-bottom:8px;display:block;}
+.form-plan{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--p3);
+  background:rgba(107,45,139,0.1);border:1px solid var(--bdr2);
+  padding:10px 14px;border-radius:var(--r);}
+.form-input{
+  width:100%;background:var(--bg4);border:1px solid var(--bdr2);
+  border-radius:var(--r);padding:11px 14px;
+  color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:14px;
+  transition:border-color .15s;outline:none;
+}
+.form-input:focus{border-color:var(--p3);}
+.form-input-h{display:flex;gap:8px;align-items:center;}
+.form-input-h input{width:90px;}
+.form-input-h span{color:var(--txt3);font-family:'JetBrains Mono',monospace;font-size:13px;}
+textarea.form-input{resize:vertical;min-height:90px;font-family:'Noto Serif SC',serif;font-size:13px;line-height:1.7;}
+.modal-footer{display:flex;gap:10px;padding:0 24px 20px;justify-content:flex-end;}
+.btn{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:1px;
+  padding:9px 20px;border-radius:var(--r);cursor:pointer;border:1px solid;transition:all .15s;}
+.btn-cancel{background:transparent;border-color:var(--bdr);color:var(--txt3);}
+.btn-cancel:hover{border-color:var(--bdr);color:var(--txt);}
+.btn-save{background:var(--p);border-color:var(--p);color:#fff;}
+.btn-save:hover{background:var(--p2);border-color:var(--p2);}
+.btn-delete{background:rgba(231,76,60,0.15);border-color:rgba(231,76,60,0.4);color:var(--red);margin-right:auto;}
+.btn-delete:hover{background:rgba(231,76,60,0.3);}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;right:28px;z-index:2000;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--p3);display:none;
+  animation:toastIn .2s ease;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* ── SECTION TITLE ── */
+.sec-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--bdr2);}
+.sec-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--p3);
+  border:1px solid var(--bdr);padding:3px 8px;border-radius:3px;background:rgba(107,45,139,0.1);}
+.sec-title{font-size:17px;font-weight:600;}
+
+/* ── PHASE SUMMARY BAR ── */
+.phase-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:36px;}
+@media(max-width:600px){.phase-summary{grid-template-columns:repeat(2,1fr);}}
+.ps-card{background:var(--card);border:1px solid var(--bdr2);border-radius:var(--r);
+  padding:16px 14px;position:relative;overflow:hidden;}
+.ps-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.ps-card.pre::before{background:var(--cyan);}
+.ps-card.spring::before{background:var(--p3);}
+.ps-card.summer::before{background:var(--gold);}
+.ps-card.autumn::before{background:var(--p2);}
+.ps-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--txt3);margin-bottom:8px;}
+.ps-hours{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--p3);line-height:1;}
+.ps-hours sup{font-size:0.45em;color:var(--txt3);}
+.ps-actual{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);margin-top:4px;}
+.ps-prog{margin-top:10px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.ps-prog-fill{height:100%;border-radius:2px;transition:width .8s;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:rgba(107,45,139,0.4);border-radius:3px;}
+
+/* ── MOBILE OPTIMIZATIONS ── */
+@media(max-width:700px){
+  .month-stats{gap:10px;}
+  .days-table .hide-mobile{display:none;}
+}
+
+/* 底部安全区（iPhone刘海/底部手势区域） */
+.page { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+
+/* 底部导航栏 */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+  background: rgba(16,16,30,0.95);
+  border-top: 1px solid var(--bdr);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bnav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 10px 0 8px;
+  cursor: pointer; gap: 4px;
+  transition: color .15s;
+  color: var(--txt3);
+  border: none; background: none;
+  font-family: 'Noto Serif SC', serif;
+  -webkit-tap-highlight-color: transparent;
+}
+.bnav-item:active { color: var(--p3); }
+.bnav-item.active { color: var(--p3); }
+.bnav-ico { font-size: 20px; line-height: 1; }
+.bnav-lbl { font-size: 10px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px; }
+
+/* 页面视图切换 */
+.view { display: none; }
+.view.active { display: block; }
+
+/* 今日视图卡片 */
+.today-view { padding: 0; }
+.today-date-banner {
+  background: linear-gradient(135deg, rgba(107,45,139,0.3), rgba(107,45,139,0.1));
+  border: 1px solid var(--bdr); border-radius: var(--r);
+  padding: 20px 20px 16px; margin-bottom: 20px;
+  text-align: center;
+}
+.today-date-big {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px; font-weight: 700;
+  color: var(--txt); line-height: 1;
+}
+.today-date-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--txt3); margin-top: 6px; letter-spacing: 2px;
+}
+.today-plan-card {
+  background: var(--card); border: 1px solid var(--bdr2);
+  border-radius: var(--r); padding: 18px 20px; margin-bottom: 14px;
+}
+.today-plan-row {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.today-plan-label { font-size: 13px; color: var(--txt2); }
+.today-plan-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 22px;
+  font-weight: 700; color: var(--p3);
+}
+.today-actual-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 22px;
+  font-weight: 700; color: var(--green);
+}
+.today-bar-bg { height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.today-bar-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+.today-note-card {
+  background: var(--card); border: 1px solid var(--bdr2);
+  border-radius: var(--r); padding: 16px 20px; margin-bottom: 14px;
+}
+.today-note-label { font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--txt3); margin-bottom: 8px; }
+.today-note-text { font-size: 14px; color: var(--txt2); line-height: 1.75; white-space: pre-wrap; }
+.today-note-empty { font-size: 13px; color: var(--txt3); }
+.btn-today-record {
+  width: 100%; padding: 16px; border-radius: var(--r);
+  background: linear-gradient(135deg, var(--p), var(--p2));
+  border: none; color: #fff; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 2px;
+  transition: opacity .15s; margin-bottom: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-today-record:active { opacity: .8; }
+.today-week-summary {
+  background: var(--card); border: 1px solid var(--bdr2);
+  border-radius: var(--r); padding: 16px 20px;
+}
+.tws-title { font-size: 13px; color: var(--txt2); margin-bottom: 12px; font-weight: 600; }
+.tws-days { display: flex; gap: 6px; }
+.tws-day {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.tws-day-name { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--txt3); }
+.tws-day-bar-bg { width: 100%; height: 40px; background: var(--bg4); border-radius: 3px;
+  overflow: hidden; display: flex; align-items: flex-end; }
+.tws-day-bar-fill { width: 100%; border-radius: 3px; transition: height .4s; }
+.tws-day-val { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--txt3); }
+.tws-day.today .tws-day-name { color: var(--gold); }
+.tws-day.today .tws-day-val  { color: var(--gold); }
+
+/* 统计视图 */
+.stats-card {
+  background: var(--card); border: 1px solid var(--bdr2);
+  border-radius: var(--r); padding: 18px 20px; margin-bottom: 14px;
+}
+.stats-card-title {
+  font-size: 13px; font-weight: 600; color: var(--txt2);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.streak-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 48px; font-weight: 700; color: var(--gold);
+  line-height: 1; text-align: center; padding: 10px 0;
+}
+.streak-label { text-align: center; font-size: 12px; color: var(--txt3); }
+
+/* 备份视图 */
+.backup-card {
+  background: var(--card); border: 1px solid var(--bdr2);
+  border-radius: var(--r); padding: 20px; margin-bottom: 14px;
+}
+.backup-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.backup-desc { font-size: 13px; color: var(--txt3); line-height: 1.7; margin-bottom: 16px; }
+.btn-backup {
+  width: 100%; padding: 13px; border-radius: var(--r);
+  border: 1px solid var(--bdr); background: rgba(107,45,139,0.15);
+  color: var(--p3); cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; letter-spacing: 1px; margin-bottom: 10px;
+  transition: all .15s; -webkit-tap-highlight-color: transparent;
+}
+.btn-backup:active { background: rgba(107,45,139,0.3); }
+.btn-backup.danger { border-color: rgba(231,76,60,0.4); color: var(--red); background: rgba(231,76,60,0.1); }
+.import-area {
+  width: 100%; min-height: 80px; background: var(--bg4);
+  border: 1px solid var(--bdr2); border-radius: var(--r);
+  padding: 12px; color: var(--txt); font-size: 12px;
+  font-family: 'JetBrains Mono', monospace; resize: vertical; outline: none;
+}
+.import-area:focus { border-color: var(--p3); }
+
+/* 触摸反馈 */
+.month-header, .week-header { -webkit-tap-highlight-color: transparent; }
+.btn-record { min-height: 36px; min-width: 64px; }
+
+/* 大字体输入框 */
+.form-input { font-size: 16px !important; } /* 防止iOS自动缩放 */
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ── 视图1：今日 ── -->
+<div class="view active" id="view-today">
+<div class="today-view">
+
+  <div class="today-date-banner">
+    <div class="today-date-big" id="todayDateBig">—</div>
+    <div class="today-date-sub" id="todayDateSub">—</div>
+  </div>
+
+  <div class="today-plan-card">
+    <div class="today-plan-row">
+      <span class="today-plan-label">📋 今日计划时长</span>
+      <span class="today-plan-val" id="todayPlanVal">—</span>
+    </div>
+    <div class="today-plan-row" style="margin-bottom:0">
+      <span class="today-plan-label">✅ 实际学习时长</span>
+      <span class="today-actual-val" id="todayActualVal">未记录</span>
+    </div>
+    <div class="today-bar-bg">
+      <div class="today-bar-fill" id="todayBarFill"
+        style="width:0%;background:linear-gradient(90deg,var(--p),var(--p3))"></div>
+    </div>
+  </div>
+
+  <button class="btn-today-record" id="btnTodayRecord" onclick="openTodayModal()">
+    + 记录今日学习时长
+  </button>
+
+  <div class="today-note-card" id="todayNoteCard" style="display:none">
+    <div class="today-note-label">今日备注</div>
+    <div class="today-note-text" id="todayNoteText"></div>
+  </div>
+
+  <div class="today-week-summary">
+    <div class="tws-title">本周学习情况</div>
+    <div class="tws-days" id="twsDays"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ── 视图2：全记录 ── -->
+<div class="view" id="view-records">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge">Study Tracker · Kaoyan 2026 · 中国科学院大学软件学院</div>
+  <h1>科软考研<br><em>全年学习时长追踪</em></h1>
+  <div class="hero-sub">2026.04.19 — 2026.12.25 &nbsp;·&nbsp; 251天备考冲刺</div>
+</div>
+
+<!-- KPI -->
+<div class="kpi-strip">
+  <div class="kpi">
+    <div class="kpi-n" id="kpiTotal">2,788<sup>h</sup></div>
+    <div class="kpi-l">计划总时长</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-n gold" id="kpiActual">—</div>
+    <div class="kpi-l">已记录时长</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-n cyan" id="kpiDaysRecorded">0</div>
+    <div class="kpi-l">已记录天数</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-n red" id="kpiCountdown">—</div>
+    <div class="kpi-l">距考研剩余天</div>
+  </div>
+</div>
+
+<!-- OVERALL PROGRESS -->
+<div class="overall-prog">
+  <div class="prog-label-row">
+    <span class="prog-title">📊 计划时长完成进度</span>
+    <span class="prog-vals" id="progText">0h / 2788h · 0%</span>
+  </div>
+  <div class="prog-bar-bg">
+    <div class="prog-bar-fill" id="progFill"
+      style="width:0%;background:linear-gradient(90deg,var(--p),var(--p3))"></div>
+  </div>
+</div>
+
+<!-- PHASE SUMMARY -->
+<div class="phase-summary">
+  <div class="ps-card pre" id="ps-pre">
+    <div class="ps-label">考研预备周</div>
+    <div class="ps-hours">89<sup>h</sup></div>
+    <div class="ps-actual" id="psa-pre">已记录：—</div>
+    <div class="ps-prog"><div class="ps-prog-fill" id="psp-pre" style="width:0%;background:var(--cyan)"></div></div>
+  </div>
+  <div class="ps-card spring" id="ps-spring">
+    <div class="ps-label">春季学期</div>
+    <div class="ps-hours">1,220<sup>h</sup></div>
+    <div class="ps-actual" id="psa-spring">已记录：—</div>
+    <div class="ps-prog"><div class="ps-prog-fill" id="psp-spring" style="width:0%;background:var(--p3)"></div></div>
+  </div>
+  <div class="ps-card summer" id="ps-summer">
+    <div class="ps-label">暑假</div>
+    <div class="ps-hours">650<sup>h</sup></div>
+    <div class="ps-actual" id="psa-summer">已记录：—</div>
+    <div class="ps-prog"><div class="ps-prog-fill" id="psp-summer" style="width:0%;background:var(--gold)"></div></div>
+  </div>
+  <div class="ps-card autumn" id="ps-autumn">
+    <div class="ps-label">秋季学期（预测）</div>
+    <div class="ps-hours">1,384<sup>h</sup></div>
+    <div class="ps-actual" id="psa-autumn">已记录：—</div>
+    <div class="ps-prog"><div class="ps-prog-fill" id="psp-autumn" style="width:0%;background:var(--p2)"></div></div>
+  </div>
+</div>
+
+<!-- MONTHS ACCORDION -->
+<div class="sec-row">
+  <span class="sec-tag">TIMELINE</span>
+  <span class="sec-title">月 → 周 → 日 学习时长</span>
+</div>
+<div class="months-wrap" id="monthsWrap"></div>
+
+</div><!-- /view-records -->
+
+<!-- ── 视图3：统计 ── -->
+<div class="view" id="view-stats">
+  <div style="padding-top:8px">
+
+  <div class="stats-card">
+    <div class="stats-card-title">🔥 连续打卡天数</div>
+    <div class="streak-num" id="streakNum">0</div>
+    <div class="streak-label" id="streakLabel">天连续记录</div>
+  </div>
+
+  <div class="stats-card">
+    <div class="stats-card-title">📊 本月完成情况</div>
+    <div id="thisMonthStats" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--txt2);line-height:2"></div>
+  </div>
+
+  <div class="stats-card">
+    <div class="stats-card-title">🏆 各月完成率</div>
+    <div class="mbar-grid" id="statsMonthBars"></div>
+  
+<div class="stats-card">
+  <div class="stats-card-title">🗓 学习热力图</div>
+  <div id="heatmap" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+</div>
+
+
+  <div class="stats-card">
+    <div class="stats-card-title">📈 近14天趋势</div>
+    <canvas id="miniChart" height="120"></canvas>
+  </div>
+
+  </div>
+</div>
+
+<!-- ── 视图4：备份 ── -->
+<div class="view" id="view-backup">
+  <div style="padding-top:8px">
+
+  <div class="backup-card">
+    <div class="backup-title">📤 导出备份数据</div>
+    <div class="backup-desc">将所有记录导出为文本，可以复制保存到备忘录、微信文件传输助手，或发给自己的邮箱。换手机时用来恢复数据。</div>
+    <button class="btn-backup" onclick="exportData()">📋 复制数据到剪贴板</button>
+    <button class="btn-backup" onclick="downloadData()">💾 下载为文件</button>
+  </div>
+
+  <div class="backup-card">
+    <div class="backup-title">📥 导入恢复数据</div>
+    <div class="backup-desc">将之前导出的备份数据粘贴到下方，然后点击导入。<br>⚠️ 导入会覆盖当前所有记录。</div>
+    <textarea class="import-area" id="importArea" placeholder="将备份数据粘贴到这里…"></textarea>
+    <button class="btn-backup" onclick="importData()" style="margin-top:10px">✅ 导入恢复</button>
+  </div>
+
+  <div class="backup-card">
+    <div class="backup-title">⚠️ 危险操作</div>
+    <div class="backup-desc">清空所有已记录的数据，此操作不可恢复。</div>
+    <button class="btn-backup danger" onclick="clearAllData()">🗑 清空所有记录</button>
+  </div>
+
+  <div class="backup-card" style="border-color:rgba(107,45,139,0.2)">
+    <div class="backup-title" style="color:var(--txt3);font-size:13px">📖 使用说明</div>
+    <div style="font-size:12px;color:var(--txt3);line-height:2">
+      1. 用手机浏览器（Safari/Chrome）打开此文件<br>
+      2. Safari：点右下角分享 → 添加到主屏幕 🏠<br>
+      3. Chrome：点右上角菜单 → 添加到主屏幕<br>
+      4. 以后直接从主屏幕图标打开，就像App一样<br>
+      5. 数据存在手机本地，卸载浏览器前请先备份
+    </div>
+  </div>
+
+  </div>
+</div>
+
+</div><!-- /page -->
+
+<!-- 底部导航 -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" id="nav-today" onclick="switchView('today')">
+    <span class="bnav-ico">📅</span>
+    <span class="bnav-lbl">今日</span>
+  </button>
+  <button class="bnav-item" id="nav-records" onclick="switchView('records')">
+    <span class="bnav-ico">📚</span>
+    <span class="bnav-lbl">全记录</span>
+  </button>
+  <button class="bnav-item" id="nav-stats" onclick="switchView('stats')">
+    <span class="bnav-ico">📊</span>
+    <span class="bnav-lbl">统计</span>
+  </button>
+  <button class="bnav-item" id="nav-backup" onclick="switchView('backup')">
+    <span class="bnav-ico">☁️</span>
+    <span class="bnav-lbl">备份</span>
+  </button>
+</nav>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalTitle">记录学习时长</div>
+        <div class="modal-date" id="modalDate"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="form-label">计划时长</div>
+        <div class="form-plan" id="modalPlan">—</div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">实际学习时长</div>
+        <div class="form-input-h">
+          <input type="number" class="form-input" id="inputHours" min="0" max="16" step="0.5" placeholder="小时数">
+          <span>小时</span>
+          <span style="color:var(--txt3);font-size:11px">（可输入小数，如 8.5）</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">今日反思 / 备注</div>
+        <textarea class="form-input" id="inputNote" placeholder="写下今天的学习内容、进度感受、遇到的问题、明天的计划…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-delete" id="btnDelete" onclick="deleteRecord()" style="display:none">删除记录</button>
+      <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn btn-save" onclick="saveRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════
+const DAILY_DATA = [{"date": "2026-04-19", "phase": "spring", "weekday": 6, "month": 4, "free_h": 12.75}, {"date": "2026-04-20", "phase": "spring", "weekday": 0, "month": 4, "free_h": 9.25}, {"date": "2026-04-21", "phase": "spring", "weekday": 1, "month": 4, "free_h": 5.75}, {"date": "2026-04-22", "phase": "spring", "weekday": 2, "month": 4, "free_h": 9.33}, {"date": "2026-04-23", "phase": "spring", "weekday": 3, "month": 4, "free_h": 9.33}, {"date": "2026-04-24", "phase": "spring", "weekday": 4, "month": 4, "free_h": 5.5}, {"date": "2026-04-25", "phase": "spring", "weekday": 5, "month": 4, "free_h": 12.75}, {"date": "2026-04-26", "phase": "spring", "weekday": 6, "month": 4, "free_h": 12.75}, {"date": "2026-04-27", "phase": "spring", "weekday": 0, "month": 4, "free_h": 9.25}, {"date": "2026-04-28", "phase": "spring", "weekday": 1, "month": 4, "free_h": 5.75}, {"date": "2026-04-29", "phase": "spring", "weekday": 2, "month": 4, "free_h": 9.33}, {"date": "2026-04-30", "phase": "spring", "weekday": 3, "month": 4, "free_h": 9.33}, {"date": "2026-05-01", "phase": "spring", "weekday": 4, "month": 5, "free_h": 12.75}, {"date": "2026-05-02", "phase": "spring", "weekday": 5, "month": 5, "free_h": 12.75}, {"date": "2026-05-03", "phase": "spring", "weekday": 6, "month": 5, "free_h": 12.75}, {"date": "2026-05-04", "phase": "spring", "weekday": 0, "month": 5, "free_h": 9.25}, {"date": "2026-05-05", "phase": "spring", "weekday": 1, "month": 5, "free_h": 5.75}, {"date": "2026-05-06", "phase": "spring", "weekday": 2, "month": 5, "free_h": 9.33}, {"date": "2026-05-07", "phase": "spring", "weekday": 3, "month": 5, "free_h": 9.33}, {"date": "2026-05-08", "phase": "spring", "weekday": 4, "month": 5, "free_h": 7.5}, {"date": "2026-05-09", "phase": "spring", "weekday": 5, "month": 5, "free_h": 12.75}, {"date": "2026-05-10", "phase": "spring", "weekday": 6, "month": 5, "free_h": 12.75}, {"date": "2026-05-11", "phase": "spring", "weekday": 0, "month": 5, "free_h": 9.25}, {"date": "2026-05-12", "phase": "spring", "weekday": 1, "month": 5, "free_h": 7.5}, {"date": "2026-05-13", "phase": "spring", "weekday": 2, "month": 5, "free_h": 9.33}, {"date": "2026-05-14", "phase": "spring", "weekday": 3, "month": 5, "free_h": 9.33}, {"date": "2026-05-15", "phase": "spring", "weekday": 4, "month": 5, "free_h": 9.67}, {"date": "2026-05-16", "phase": "spring", "weekday": 5, "month": 5, "free_h": 12.75}, {"date": "2026-05-17", "phase": "spring", "weekday": 6, "month": 5, "free_h": 12.75}, {"date": "2026-05-18", "phase": "spring", "weekday": 0, "month": 5, "free_h": 9.25}, {"date": "2026-05-19", "phase": "spring", "weekday": 1, "month": 5, "free_h": 5.75}, {"date": "2026-05-20", "phase": "spring", "weekday": 2, "month": 5, "free_h": 9.33}, {"date": "2026-05-21", "phase": "spring", "weekday": 3, "month": 5, "free_h": 9.33}, {"date": "2026-05-22", "phase": "spring", "weekday": 4, "month": 5, "free_h": 9.67}, {"date": "2026-05-23", "phase": "spring", "weekday": 5, "month": 5, "free_h": 12.75}, {"date": "2026-05-24", "phase": "spring", "weekday": 6, "month": 5, "free_h": 12.75}, {"date": "2026-05-25", "phase": "spring", "weekday": 0, "month": 5, "free_h": 9.25}, {"date": "2026-05-26", "phase": "spring", "weekday": 1, "month": 5, "free_h": 9.25}, {"date": "2026-05-27", "phase": "spring", "weekday": 2, "month": 5, "free_h": 9.33}, {"date": "2026-05-28", "phase": "spring", "weekday": 3, "month": 5, "free_h": 9.33}, {"date": "2026-05-29", "phase": "spring", "weekday": 4, "month": 5, "free_h": 12.75}, {"date": "2026-05-30", "phase": "spring", "weekday": 5, "month": 5, "free_h": 12.75}, {"date": "2026-05-31", "phase": "spring", "weekday": 6, "month": 5, "free_h": 12.75}, {"date": "2026-06-01", "phase": "spring", "weekday": 0, "month": 6, "free_h": 12.75}, {"date": "2026-06-02", "phase": "spring", "weekday": 1, "month": 6, "free_h": 9.25}, {"date": "2026-06-03", "phase": "spring", "weekday": 2, "month": 6, "free_h": 9.33}, {"date": "2026-06-04", "phase": "spring", "weekday": 3, "month": 6, "free_h": 12.75}, {"date": "2026-06-05", "phase": "spring", "weekday": 4, "month": 6, "free_h": 12.75}, {"date": "2026-06-06", "phase": "spring", "weekday": 5, "month": 6, "free_h": 12.75}, {"date": "2026-06-07", "phase": "spring", "weekday": 6, "month": 6, "free_h": 12.75}, {"date": "2026-06-08", "phase": "spring", "weekday": 0, "month": 6, "free_h": 12.75}, {"date": "2026-06-09", "phase": "spring", "weekday": 1, "month": 6, "free_h": 9.25}, {"date": "2026-06-10", "phase": "spring", "weekday": 2, "month": 6, "free_h": 12.75}, {"date": "2026-06-11", "phase": "spring", "weekday": 3, "month": 6, "free_h": 12.75}, {"date": "2026-06-12", "phase": "spring", "weekday": 4, "month": 6, "free_h": 12.75}, {"date": "2026-06-13", "phase": "spring", "weekday": 5, "month": 6, "free_h": 12.75}, {"date": "2026-06-14", "phase": "spring", "weekday": 6, "month": 6, "free_h": 12.75}, {"date": "2026-06-15", "phase": "spring", "weekday": 0, "month": 6, "free_h": 12.75}, {"date": "2026-06-16", "phase": "spring", "weekday": 1, "month": 6, "free_h": 12.75}, {"date": "2026-06-17", "phase": "spring", "weekday": 2, "month": 6, "free_h": 12.75}, {"date": "2026-06-18", "phase": "spring", "weekday": 3, "month": 6, "free_h": 12.75}, {"date": "2026-06-19", "phase": "spring", "weekday": 4, "month": 6, "free_h": 12.75}, {"date": "2026-06-20", "phase": "spring", "weekday": 5, "month": 6, "free_h": 12.75}, {"date": "2026-06-21", "phase": "spring", "weekday": 6, "month": 6, "free_h": 12.75}, {"date": "2026-06-22", "phase": "spring", "weekday": 0, "month": 6, "free_h": 12.75}, {"date": "2026-06-23", "phase": "spring", "weekday": 1, "month": 6, "free_h": 12.75}, {"date": "2026-06-24", "phase": "spring", "weekday": 2, "month": 6, "free_h": 12.75}, {"date": "2026-06-25", "phase": "spring", "weekday": 3, "month": 6, "free_h": 12.75}, {"date": "2026-06-26", "phase": "spring", "weekday": 4, "month": 6, "free_h": 12.75}, {"date": "2026-06-27", "phase": "spring", "weekday": 5, "month": 6, "free_h": 12.75}, {"date": "2026-06-28", "phase": "spring", "weekday": 6, "month": 6, "free_h": 12.75}, {"date": "2026-06-29", "phase": "spring", "weekday": 0, "month": 6, "free_h": 12.75}, {"date": "2026-06-30", "phase": "spring", "weekday": 1, "month": 6, "free_h": 12.75}, {"date": "2026-07-01", "phase": "spring", "weekday": 2, "month": 7, "free_h": 12.75}, {"date": "2026-07-02", "phase": "spring", "weekday": 3, "month": 7, "free_h": 12.75}, {"date": "2026-07-03", "phase": "spring", "weekday": 4, "month": 7, "free_h": 10.92}, {"date": "2026-07-04", "phase": "summer", "weekday": 5, "month": 7, "free_h": 12.75}, {"date": "2026-07-05", "phase": "summer", "weekday": 6, "month": 7, "free_h": 12.75}, {"date": "2026-07-06", "phase": "summer", "weekday": 0, "month": 7, "free_h": 12.75}, {"date": "2026-07-07", "phase": "summer", "weekday": 1, "month": 7, "free_h": 12.75}, {"date": "2026-07-08", "phase": "summer", "weekday": 2, "month": 7, "free_h": 12.75}, {"date": "2026-07-09", "phase": "summer", "weekday": 3, "month": 7, "free_h": 12.75}, {"date": "2026-07-10", "phase": "summer", "weekday": 4, "month": 7, "free_h": 12.75}, {"date": "2026-07-11", "phase": "summer", "weekday": 5, "month": 7, "free_h": 12.75}, {"date": "2026-07-12", "phase": "summer", "weekday": 6, "month": 7, "free_h": 12.75}, {"date": "2026-07-13", "phase": "summer", "weekday": 0, "month": 7, "free_h": 12.75}, {"date": "2026-07-14", "phase": "summer", "weekday": 1, "month": 7, "free_h": 12.75}, {"date": "2026-07-15", "phase": "summer", "weekday": 2, "month": 7, "free_h": 12.75}, {"date": "2026-07-16", "phase": "summer", "weekday": 3, "month": 7, "free_h": 12.75}, {"date": "2026-07-17", "phase": "summer", "weekday": 4, "month": 7, "free_h": 12.75}, {"date": "2026-07-18", "phase": "summer", "weekday": 5, "month": 7, "free_h": 12.75}, {"date": "2026-07-19", "phase": "summer", "weekday": 6, "month": 7, "free_h": 12.75}, {"date": "2026-07-20", "phase": "summer", "weekday": 0, "month": 7, "free_h": 12.75}, {"date": "2026-07-21", "phase": "summer", "weekday": 1, "month": 7, "free_h": 12.75}, {"date": "2026-07-22", "phase": "summer", "weekday": 2, "month": 7, "free_h": 12.75}, {"date": "2026-07-23", "phase": "summer", "weekday": 3, "month": 7, "free_h": 12.75}, {"date": "2026-07-24", "phase": "summer", "weekday": 4, "month": 7, "free_h": 12.75}, {"date": "2026-07-25", "phase": "summer", "weekday": 5, "month": 7, "free_h": 12.75}, {"date": "2026-07-26", "phase": "summer", "weekday": 6, "month": 7, "free_h": 12.75}, {"date": "2026-07-27", "phase": "summer", "weekday": 0, "month": 7, "free_h": 12.75}, {"date": "2026-07-28", "phase": "summer", "weekday": 1, "month": 7, "free_h": 12.75}, {"date": "2026-07-29", "phase": "summer", "weekday": 2, "month": 7, "free_h": 12.75}, {"date": "2026-07-30", "phase": "summer", "weekday": 3, "month": 7, "free_h": 12.75}, {"date": "2026-07-31", "phase": "summer", "weekday": 4, "month": 7, "free_h": 12.75}, {"date": "2026-08-01", "phase": "summer", "weekday": 5, "month": 8, "free_h": 12.75}, {"date": "2026-08-02", "phase": "summer", "weekday": 6, "month": 8, "free_h": 12.75}, {"date": "2026-08-03", "phase": "summer", "weekday": 0, "month": 8, "free_h": 12.75}, {"date": "2026-08-04", "phase": "summer", "weekday": 1, "month": 8, "free_h": 12.75}, {"date": "2026-08-05", "phase": "summer", "weekday": 2, "month": 8, "free_h": 12.75}, {"date": "2026-08-06", "phase": "summer", "weekday": 3, "month": 8, "free_h": 12.75}, {"date": "2026-08-07", "phase": "summer", "weekday": 4, "month": 8, "free_h": 12.75}, {"date": "2026-08-08", "phase": "summer", "weekday": 5, "month": 8, "free_h": 12.75}, {"date": "2026-08-09", "phase": "summer", "weekday": 6, "month": 8, "free_h": 12.75}, {"date": "2026-08-10", "phase": "summer", "weekday": 0, "month": 8, "free_h": 12.75}, {"date": "2026-08-11", "phase": "summer", "weekday": 1, "month": 8, "free_h": 12.75}, {"date": "2026-08-12", "phase": "summer", "weekday": 2, "month": 8, "free_h": 12.75}, {"date": "2026-08-13", "phase": "summer", "weekday": 3, "month": 8, "free_h": 12.75}, {"date": "2026-08-14", "phase": "summer", "weekday": 4, "month": 8, "free_h": 12.75}, {"date": "2026-08-15", "phase": "summer", "weekday": 5, "month": 8, "free_h": 12.75}, {"date": "2026-08-16", "phase": "summer", "weekday": 6, "month": 8, "free_h": 12.75}, {"date": "2026-08-17", "phase": "summer", "weekday": 0, "month": 8, "free_h": 12.75}, {"date": "2026-08-18", "phase": "summer", "weekday": 1, "month": 8, "free_h": 12.75}, {"date": "2026-08-19", "phase": "summer", "weekday": 2, "month": 8, "free_h": 12.75}, {"date": "2026-08-20", "phase": "summer", "weekday": 3, "month": 8, "free_h": 12.75}, {"date": "2026-08-21", "phase": "summer", "weekday": 4, "month": 8, "free_h": 12.75}, {"date": "2026-08-22", "phase": "summer", "weekday": 5, "month": 8, "free_h": 12.75}, {"date": "2026-08-23", "phase": "summer", "weekday": 6, "month": 8, "free_h": 12.75}, {"date": "2026-08-24", "phase": "autumn", "weekday": 0, "month": 8, "free_h": 9.65}, {"date": "2026-08-25", "phase": "autumn", "weekday": 1, "month": 8, "free_h": 8.64}, {"date": "2026-08-26", "phase": "autumn", "weekday": 2, "month": 8, "free_h": 10.68}, {"date": "2026-08-27", "phase": "autumn", "weekday": 3, "month": 8, "free_h": 9.38}, {"date": "2026-08-28", "phase": "autumn", "weekday": 4, "month": 8, "free_h": 9.72}, {"date": "2026-08-29", "phase": "autumn", "weekday": 5, "month": 8, "free_h": 12.75}, {"date": "2026-08-30", "phase": "autumn", "weekday": 6, "month": 8, "free_h": 12.75}, {"date": "2026-08-31", "phase": "autumn", "weekday": 0, "month": 8, "free_h": 9.65}, {"date": "2026-09-01", "phase": "autumn", "weekday": 1, "month": 9, "free_h": 8.64}, {"date": "2026-09-02", "phase": "autumn", "weekday": 2, "month": 9, "free_h": 10.68}, {"date": "2026-09-03", "phase": "autumn", "weekday": 3, "month": 9, "free_h": 9.38}, {"date": "2026-09-04", "phase": "autumn", "weekday": 4, "month": 9, "free_h": 9.72}, {"date": "2026-09-05", "phase": "autumn", "weekday": 5, "month": 9, "free_h": 12.75}, {"date": "2026-09-06", "phase": "autumn", "weekday": 6, "month": 9, "free_h": 12.75}, {"date": "2026-09-07", "phase": "autumn", "weekday": 0, "month": 9, "free_h": 9.65}, {"date": "2026-09-08", "phase": "autumn", "weekday": 1, "month": 9, "free_h": 8.64}, {"date": "2026-09-09", "phase": "autumn", "weekday": 2, "month": 9, "free_h": 10.68}, {"date": "2026-09-10", "phase": "autumn", "weekday": 3, "month": 9, "free_h": 9.38}, {"date": "2026-09-11", "phase": "autumn", "weekday": 4, "month": 9, "free_h": 9.72}, {"date": "2026-09-12", "phase": "autumn", "weekday": 5, "month": 9, "free_h": 12.75}, {"date": "2026-09-13", "phase": "autumn", "weekday": 6, "month": 9, "free_h": 12.75}, {"date": "2026-09-14", "phase": "autumn", "weekday": 0, "month": 9, "free_h": 9.65}, {"date": "2026-09-15", "phase": "autumn", "weekday": 1, "month": 9, "free_h": 8.64}, {"date": "2026-09-16", "phase": "autumn", "weekday": 2, "month": 9, "free_h": 10.68}, {"date": "2026-09-17", "phase": "autumn", "weekday": 3, "month": 9, "free_h": 9.38}, {"date": "2026-09-18", "phase": "autumn", "weekday": 4, "month": 9, "free_h": 9.72}, {"date": "2026-09-19", "phase": "autumn", "weekday": 5, "month": 9, "free_h": 12.75}, {"date": "2026-09-20", "phase": "autumn", "weekday": 6, "month": 9, "free_h": 12.75}, {"date": "2026-09-21", "phase": "autumn", "weekday": 0, "month": 9, "free_h": 9.65}, {"date": "2026-09-22", "phase": "autumn", "weekday": 1, "month": 9, "free_h": 8.64}, {"date": "2026-09-23", "phase": "autumn", "weekday": 2, "month": 9, "free_h": 10.68}, {"date": "2026-09-24", "phase": "autumn", "weekday": 3, "month": 9, "free_h": 9.38}, {"date": "2026-09-25", "phase": "autumn", "weekday": 4, "month": 9, "free_h": 9.72}, {"date": "2026-09-26", "phase": "autumn", "weekday": 5, "month": 9, "free_h": 12.75}, {"date": "2026-09-27", "phase": "autumn", "weekday": 6, "month": 9, "free_h": 12.75}, {"date": "2026-09-28", "phase": "autumn", "weekday": 0, "month": 9, "free_h": 9.65}, {"date": "2026-09-29", "phase": "autumn", "weekday": 1, "month": 9, "free_h": 8.64}, {"date": "2026-09-30", "phase": "autumn", "weekday": 2, "month": 9, "free_h": 10.68}, {"date": "2026-10-01", "phase": "autumn", "weekday": 3, "month": 10, "free_h": 9.38}, {"date": "2026-10-02", "phase": "autumn", "weekday": 4, "month": 10, "free_h": 9.72}, {"date": "2026-10-03", "phase": "autumn", "weekday": 5, "month": 10, "free_h": 12.75}, {"date": "2026-10-04", "phase": "autumn", "weekday": 6, "month": 10, "free_h": 12.75}, {"date": "2026-10-05", "phase": "autumn", "weekday": 0, "month": 10, "free_h": 9.65}, {"date": "2026-10-06", "phase": "autumn", "weekday": 1, "month": 10, "free_h": 8.64}, {"date": "2026-10-07", "phase": "autumn", "weekday": 2, "month": 10, "free_h": 10.68}, {"date": "2026-10-08", "phase": "autumn", "weekday": 3, "month": 10, "free_h": 9.38}, {"date": "2026-10-09", "phase": "autumn", "weekday": 4, "month": 10, "free_h": 9.72}, {"date": "2026-10-10", "phase": "autumn", "weekday": 5, "month": 10, "free_h": 12.75}, {"date": "2026-10-11", "phase": "autumn", "weekday": 6, "month": 10, "free_h": 12.75}, {"date": "2026-10-12", "phase": "autumn", "weekday": 0, "month": 10, "free_h": 9.65}, {"date": "2026-10-13", "phase": "autumn", "weekday": 1, "month": 10, "free_h": 8.64}, {"date": "2026-10-14", "phase": "autumn", "weekday": 2, "month": 10, "free_h": 10.68}, {"date": "2026-10-15", "phase": "autumn", "weekday": 3, "month": 10, "free_h": 9.38}, {"date": "2026-10-16", "phase": "autumn", "weekday": 4, "month": 10, "free_h": 9.72}, {"date": "2026-10-17", "phase": "autumn", "weekday": 5, "month": 10, "free_h": 12.75}, {"date": "2026-10-18", "phase": "autumn", "weekday": 6, "month": 10, "free_h": 12.75}, {"date": "2026-10-19", "phase": "autumn", "weekday": 0, "month": 10, "free_h": 9.65}, {"date": "2026-10-20", "phase": "autumn", "weekday": 1, "month": 10, "free_h": 8.64}, {"date": "2026-10-21", "phase": "autumn", "weekday": 2, "month": 10, "free_h": 10.68}, {"date": "2026-10-22", "phase": "autumn", "weekday": 3, "month": 10, "free_h": 9.38}, {"date": "2026-10-23", "phase": "autumn", "weekday": 4, "month": 10, "free_h": 9.72}, {"date": "2026-10-24", "phase": "autumn", "weekday": 5, "month": 10, "free_h": 12.75}, {"date": "2026-10-25", "phase": "autumn", "weekday": 6, "month": 10, "free_h": 12.75}, {"date": "2026-10-26", "phase": "autumn", "weekday": 0, "month": 10, "free_h": 9.65}, {"date": "2026-10-27", "phase": "autumn", "weekday": 1, "month": 10, "free_h": 8.64}, {"date": "2026-10-28", "phase": "autumn", "weekday": 2, "month": 10, "free_h": 10.68}, {"date": "2026-10-29", "phase": "autumn", "weekday": 3, "month": 10, "free_h": 9.38}, {"date": "2026-10-30", "phase": "autumn", "weekday": 4, "month": 10, "free_h": 9.72}, {"date": "2026-10-31", "phase": "autumn", "weekday": 5, "month": 10, "free_h": 12.75}, {"date": "2026-11-01", "phase": "autumn", "weekday": 6, "month": 11, "free_h": 12.75}, {"date": "2026-11-02", "phase": "autumn", "weekday": 0, "month": 11, "free_h": 9.65}, {"date": "2026-11-03", "phase": "autumn", "weekday": 1, "month": 11, "free_h": 8.64}, {"date": "2026-11-04", "phase": "autumn", "weekday": 2, "month": 11, "free_h": 10.68}, {"date": "2026-11-05", "phase": "autumn", "weekday": 3, "month": 11, "free_h": 9.38}, {"date": "2026-11-06", "phase": "autumn", "weekday": 4, "month": 11, "free_h": 9.72}, {"date": "2026-11-07", "phase": "autumn", "weekday": 5, "month": 11, "free_h": 12.75}, {"date": "2026-11-08", "phase": "autumn", "weekday": 6, "month": 11, "free_h": 12.75}, {"date": "2026-11-09", "phase": "autumn", "weekday": 0, "month": 11, "free_h": 9.65}, {"date": "2026-11-10", "phase": "autumn", "weekday": 1, "month": 11, "free_h": 8.64}, {"date": "2026-11-11", "phase": "autumn", "weekday": 2, "month": 11, "free_h": 10.68}, {"date": "2026-11-12", "phase": "autumn", "weekday": 3, "month": 11, "free_h": 9.38}, {"date": "2026-11-13", "phase": "autumn", "weekday": 4, "month": 11, "free_h": 9.72}, {"date": "2026-11-14", "phase": "autumn", "weekday": 5, "month": 11, "free_h": 12.75}, {"date": "2026-11-15", "phase": "autumn", "weekday": 6, "month": 11, "free_h": 12.75}, {"date": "2026-11-16", "phase": "autumn", "weekday": 0, "month": 11, "free_h": 9.65}, {"date": "2026-11-17", "phase": "autumn", "weekday": 1, "month": 11, "free_h": 8.64}, {"date": "2026-11-18", "phase": "autumn", "weekday": 2, "month": 11, "free_h": 10.68}, {"date": "2026-11-19", "phase": "autumn", "weekday": 3, "month": 11, "free_h": 9.38}, {"date": "2026-11-20", "phase": "autumn", "weekday": 4, "month": 11, "free_h": 9.72}, {"date": "2026-11-21", "phase": "autumn", "weekday": 5, "month": 11, "free_h": 12.75}, {"date": "2026-11-22", "phase": "autumn", "weekday": 6, "month": 11, "free_h": 12.75}, {"date": "2026-11-23", "phase": "autumn", "weekday": 0, "month": 11, "free_h": 9.65}, {"date": "2026-11-24", "phase": "autumn", "weekday": 1, "month": 11, "free_h": 8.64}, {"date": "2026-11-25", "phase": "autumn", "weekday": 2, "month": 11, "free_h": 10.68}, {"date": "2026-11-26", "phase": "autumn", "weekday": 3, "month": 11, "free_h": 9.38}, {"date": "2026-11-27", "phase": "autumn", "weekday": 4, "month": 11, "free_h": 9.72}, {"date": "2026-11-28", "phase": "autumn", "weekday": 5, "month": 11, "free_h": 12.75}, {"date": "2026-11-29", "phase": "autumn", "weekday": 6, "month": 11, "free_h": 12.75}, {"date": "2026-11-30", "phase": "autumn", "weekday": 0, "month": 11, "free_h": 9.65}, {"date": "2026-12-01", "phase": "autumn", "weekday": 1, "month": 12, "free_h": 8.64}, {"date": "2026-12-02", "phase": "autumn", "weekday": 2, "month": 12, "free_h": 10.68}, {"date": "2026-12-03", "phase": "autumn", "weekday": 3, "month": 12, "free_h": 9.38}, {"date": "2026-12-04", "phase": "autumn", "weekday": 4, "month": 12, "free_h": 9.72}, {"date": "2026-12-05", "phase": "autumn", "weekday": 5, "month": 12, "free_h": 12.75}, {"date": "2026-12-06", "phase": "autumn", "weekday": 6, "month": 12, "free_h": 12.75}, {"date": "2026-12-07", "phase": "autumn", "weekday": 0, "month": 12, "free_h": 9.65}, {"date": "2026-12-08", "phase": "autumn", "weekday": 1, "month": 12, "free_h": 8.64}, {"date": "2026-12-09", "phase": "autumn", "weekday": 2, "month": 12, "free_h": 10.68}, {"date": "2026-12-10", "phase": "autumn", "weekday": 3, "month": 12, "free_h": 9.38}, {"date": "2026-12-11", "phase": "autumn", "weekday": 4, "month": 12, "free_h": 9.72}, {"date": "2026-12-12", "phase": "autumn", "weekday": 5, "month": 12, "free_h": 12.75}, {"date": "2026-12-13", "phase": "autumn", "weekday": 6, "month": 12, "free_h": 12.75}, {"date": "2026-12-14", "phase": "autumn", "weekday": 0, "month": 12, "free_h": 9.65}, {"date": "2026-12-15", "phase": "autumn", "weekday": 1, "month": 12, "free_h": 8.64}, {"date": "2026-12-16", "phase": "autumn", "weekday": 2, "month": 12, "free_h": 10.68}, {"date": "2026-12-17", "phase": "autumn", "weekday": 3, "month": 12, "free_h": 9.38}, {"date": "2026-12-18", "phase": "autumn", "weekday": 4, "month": 12, "free_h": 9.72}, {"date": "2026-12-19", "phase": "autumn", "weekday": 5, "month": 12, "free_h": 12.75}, {"date": "2026-12-20", "phase": "autumn", "weekday": 6, "month": 12, "free_h": 12.75}, {"date": "2026-12-21", "phase": "autumn", "weekday": 0, "month": 12, "free_h": 9.65}, {"date": "2026-12-22", "phase": "autumn", "weekday": 1, "month": 12, "free_h": 8.64}, {"date": "2026-12-23", "phase": "autumn", "weekday": 2, "month": 12, "free_h": 10.68}, {"date": "2026-12-24", "phase": "autumn", "weekday": 3, "month": 12, "free_h": 9.38}, {"date": "2026-12-25", "phase": "autumn", "weekday": 4, "month": 12, "free_h": 9.72}];
+
+// 获取本地日期字符串（修正UTC偏移，适配中国时区）
+function localDateStr(d) {
+  d = d || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+
+const KAOYAN_START = new Date('2026-03-02');
+const EXAM_DATE    = new Date('2026-12-25');
+const WD_CN = ['周一','周二','周三','周四','周五','周六','周日'];
+const MONTH_NAMES = {3:'3月',4:'4月',5:'5月',6:'6月',7:'7月',8:'8月',9:'9月',10:'10月',11:'11月',12:'12月'};
+const PHASE_LABEL = {pre:'考研预备',spring:'春季学期',summer:'暑假',autumn:'秋季学期'};
+const PHASE_COLORS = {pre:'var(--cyan)',spring:'var(--p3)',summer:'var(--gold)',autumn:'var(--p2)'};
+
+// 按考研周分配
+function getKaoyanWeek(dateStr) {
+  const d = new Date(dateStr);
+  return Math.floor((d - KAOYAN_START) / (7*24*3600*1000)) + 1;
+}
+DAILY_DATA.forEach(d => { d.kaoyan_week = getKaoyanWeek(d.date); });
+
+// ═══════════════════════════════════════════
+//  STORAGE  (localStorage — 手机本地持久化)
+// ═══════════════════════════════════════════
+const STORE_KEY = 'kaoyan-records-2026';
+let records = {};  // { 'YYYY-MM-DD': { actual_h: number, note: string } }
+
+async function loadRecords() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) records = JSON.parse(raw);
+  } catch(e) { records = {}; }
+}
+
+async function saveRecords() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(records));
+  } catch(e) { console.warn('storage error', e); }
+}
+
+// ═══════════════════════════════════════════
+//  COMPUTED STATS
+// ═══════════════════════════════════════════
+function totalPlanH() { return DAILY_DATA.reduce((s,d)=>s+d.free_h,0); }
+function totalActualH() {
+  return Object.values(records).reduce((s,r)=>s+(r.actual_h||0),0);
+}
+function phasePlanH(phase) { return DAILY_DATA.filter(d=>d.phase===phase).reduce((s,d)=>s+d.free_h,0); }
+function phaseActualH(phase) {
+  const dates = new Set(DAILY_DATA.filter(d=>d.phase===phase).map(d=>d.date));
+  return Object.entries(records).filter(([k])=>dates.has(k)).reduce((s,[,r])=>s+(r.actual_h||0),0);
+}
+function daysRecorded() { return Object.keys(records).length; }
+function fmtH(h) {
+  if(h==null||isNaN(h)) return '—';
+  const hi=Math.floor(h), m=Math.round((h-hi)*60);
+  return m ? `${hi}h${m.toString().padStart(2,'0')}m` : `${hi}h`;
+}
+
+// ═══════════════════════════════════════════
+//  UPDATE KPI & PROGRESS
+// ═══════════════════════════════════════════
+function updateKPI() {
+  const actual = totalActualH();
+  const plan   = totalPlanH();
+  document.getElementById('kpiActual').textContent = actual>0 ? fmtH(actual) : '—';
+  document.getElementById('kpiDaysRecorded').textContent = daysRecorded();
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff  = Math.ceil((EXAM_DATE - today) / (24*3600*1000));
+  document.getElementById('kpiCountdown').textContent = diff > 0 ? diff+'天' : '今日考研!';
+
+  const pct = plan>0 ? Math.min(100,(actual/plan)*100) : 0;
+  document.getElementById('progFill').style.width = pct.toFixed(1)+'%';
+  document.getElementById('progText').textContent =
+    `${fmtH(actual)} / ${fmtH(plan)} · ${pct.toFixed(1)}%`;
+
+  ['pre','spring','summer','autumn'].forEach(p=>{
+    const pp = phasePlanH(p), pa = phaseActualH(p);
+    const pct2 = pp>0 ? Math.min(100,(pa/pp)*100) : 0;
+    document.getElementById(`psa-${p}`).textContent =
+      pa>0 ? `已记录：${fmtH(pa)}` : '尚未记录';
+    document.getElementById(`psp-${p}`).style.width = pct2.toFixed(1)+'%';
+  });
+}
+
+// ═══════════════════════════════════════════
+//  BUILD ACCORDION
+// ═══════════════════════════════════════════
+// 按月分组
+// ── 核心修复：按考研周分组，每周包含完整7天（不被月份截断）
+// 月份块 → 包含该月"开始"的所有完整周（跨月的周归属于周开始的那个月）
+function buildWeekGroups() {
+  // 先按考研周聚合完整数据（包含该周所有天，跨月也全要）
+  const weekMap = {};
+  DAILY_DATA.forEach(d => {
+    const w = d.kaoyan_week;
+    if (!weekMap[w]) weekMap[w] = [];
+    weekMap[w].push(d);
+  });
+  return Object.entries(weekMap)
+    .sort((a, b) => +a[0] - +b[0])
+    .map(([w, days]) => ({
+      week: +w,
+      days: days.sort((a, b) => a.date.localeCompare(b.date)),
+      // 周归属月份 = 该周第一天的月份
+      belongMonth: days.sort((a,b)=>a.date.localeCompare(b.date))[0].month,
+      // 主阶段 = 该周天数最多的阶段
+      phase: (() => {
+        const cnt = {};
+        days.forEach(d => cnt[d.phase] = (cnt[d.phase]||0)+1);
+        return Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0][0];
+      })(),
+    }));
+}
+
+function buildAccordion() {
+  const wrap = document.getElementById('monthsWrap');
+  wrap.innerHTML = '';
+
+  const allWeeks = buildWeekGroups();
+
+  // 按"归属月"把完整周分到对应月份
+  const monthMap = {};
+  allWeeks.forEach(wg => {
+    const m = wg.belongMonth;
+    if (!monthMap[m]) monthMap[m] = { month: m, weeks: [], phase: wg.phase };
+    monthMap[m].weeks.push(wg);
+    if (wg.phase !== 'spring') monthMap[m].phase = wg.phase;
+  });
+  const monthGroups = Object.values(monthMap).sort((a, b) => a.month - b.month);
+
+  // 月计划时长 = 该月所有天（按日历月）的 free_h 之和（用于统计条）
+  const monthPlanByCalendar = {};
+  DAILY_DATA.forEach(d => {
+    monthPlanByCalendar[d.month] = (monthPlanByCalendar[d.month]||0) + d.free_h;
+  });
+  const maxPlanH = Math.max(...Object.values(monthPlanByCalendar));
+
+  monthGroups.forEach(mg => {
+    // 月统计用"该月归属的所有完整周"的所有天
+    const allDaysInMonth = mg.weeks.flatMap(wg => wg.days);
+    const planH   = allDaysInMonth.reduce((s,d)=>s+d.free_h, 0);
+    const actualH = allDaysInMonth.reduce((s,d)=>s+(records[d.date]?.actual_h||0), 0);
+    const hasActual = actualH > 0;
+    const color = PHASE_COLORS[mg.phase]||'var(--p3)';
+    // mini bar 用日历月数据
+    const calPlanH = monthPlanByCalendar[mg.month]||planH;
+
+    const mBlock = document.createElement('div');
+    mBlock.className = 'month-block';
+    mBlock.id = `month-${mg.month}`;
+
+    mBlock.innerHTML = `
+      <div class="month-header" onclick="toggleMonth(${mg.month})">
+        <span class="month-arrow">▶</span>
+        <span class="month-name">${MONTH_NAMES[mg.month]||mg.month+'月'}</span>
+        <span class="month-phase-tag ${mg.phase}">${PHASE_LABEL[mg.phase]||''}</span>
+        <div class="month-stats" id="mstats-${mg.month}">
+          ${renderMonthStats(planH, actualH, calPlanH, maxPlanH, color)}
+        </div>
+      </div>
+      <div class="month-body">
+        <div class="weeks-wrap" id="weeks-${mg.month}"></div>
+      </div>`;
+
+    wrap.appendChild(mBlock);
+
+    const weeksWrap = mBlock.querySelector(`#weeks-${mg.month}`);
+    mg.weeks.forEach(wg => buildWeekBlock(weeksWrap, wg));
+  });
+}
+
+function renderMonthStats(planH, actualH, calPlanH, maxPlanH, color) {
+  const hasActual = actualH > 0;
+  return `
+    <div class="mstat">
+      <div class="mstat-v">${fmtH(planH)}</div>
+      <div class="mstat-l">计划</div>
+    </div>
+    ${hasActual ? `<div class="mstat">
+      <div class="mstat-v actual">${fmtH(actualH)}</div>
+      <div class="mstat-l">实际</div>
+    </div>` : ''}
+    <div class="month-mini-bar">
+      <div class="month-mini-fill" style="width:${(calPlanH/maxPlanH*100).toFixed(0)}%;background:${color}"></div>
+    </div>`;
+}
+
+function buildWeekBlock(container, wg) {
+  const wPlanH   = wg.days.reduce((s,d)=>s+d.free_h, 0);
+  const wActualH = wg.days.reduce((s,d)=>s+(records[d.date]?.actual_h||0), 0);
+  const wStart   = wg.days[0].date;
+  const wEnd     = wg.days[wg.days.length-1].date;
+  // 跨月提示
+  const startM = wg.days[0].month, endM = wg.days[wg.days.length-1].month;
+  const crossMonth = startM !== endM ? ` <span style="font-size:9px;color:var(--gold);font-family:'JetBrains Mono',monospace">跨月</span>` : '';
+
+  const wBlock = document.createElement('div');
+  wBlock.className = 'week-block';
+  // ID 唯一：用考研周号，不会重复
+  wBlock.id = `week-${wg.week}`;
+
+  const dayRows = wg.days.map(d => makeDayRow(d)).join('');
+
+  wBlock.innerHTML = `
+    <div class="week-header" onclick="toggleWeek(${wg.week})">
+      <span class="week-arrow">▶</span>
+      <span class="week-label">考研第 ${wg.week} 周${crossMonth}</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--txt3)">${wStart.slice(5)} — ${wEnd.slice(5)}</span>
+      <div class="week-stats" id="wstats-${wg.week}">
+        ${renderWeekStats(wPlanH, wActualH)}
+      </div>
+    </div>
+    <div class="week-body">
+      <table class="days-table">
+        <thead><tr>
+          <th>日期</th><th>计划</th><th>实际 / 差值</th>
+          <th class="hide-mobile">备注</th><th>操作</th>
+        </tr></thead>
+        <tbody>${dayRows}</tbody>
+      </table>
+    </div>`;
+
+  container.appendChild(wBlock);
+}
+
+function renderWeekStats(planH, actualH) {
+  return `
+    <div><div class="wstat-v">${fmtH(planH)}</div><div class="wstat-l">计划</div></div>
+    ${actualH>0?`<div><div class="wstat-v actual">${fmtH(actualH)}</div><div class="wstat-l">实际</div></div>`:''}`;
+}
+
+function makeDayRow(d) {
+  const rec  = records[d.date];
+  const ah   = rec?.actual_h;
+  const note = rec?.note||'';
+  const diff = ah!=null ? ah - d.free_h : null;
+  const diffStr = diff==null ? '' :
+    Math.abs(diff)<0.05 ? '<span class="day-diff zero">±0</span>' :
+    diff>0 ? `<span class="day-diff pos">+${fmtH(diff)}</span>` :
+             `<span class="day-diff neg">${fmtH(diff)}</span>`;
+  const isToday = d.date === localDateStr();
+  // 跨月在日期后标注月份
+  const dateLabel = `${d.date.slice(5)}<span class="day-wd">${WD_CN[d.weekday]}</span>`
+    + (isToday ? ' <span style="font-size:9px;color:var(--gold);font-family:\'JetBrains Mono\',monospace">TODAY</span>' : '');
+  return `<tr${isToday?' style="background:rgba(107,45,139,0.08)"':''}>
+    <td><span class="day-date">${dateLabel}</span></td>
+    <td><span class="day-plan">${fmtH(d.free_h)}</span></td>
+    <td>
+      <div class="day-actual-wrap">
+        <span class="day-actual-val${ah==null?' empty':''}">${ah!=null?fmtH(ah):'—'}</span>
+        ${diffStr}
+      </div>
+    </td>
+    <td class="hide-mobile">
+      <span class="day-note-preview" title="${note.replace(/"/g,'&quot;')}">${note||'<span style="color:var(--txt3);font-size:11px">暂无备注</span>'}</span>
+    </td>
+    <td>
+      <button class="btn-record${ah!=null?' recorded':''}" onclick="openModal('${d.date}')">
+        ${ah!=null?'✏ 编辑':'+ 记录'}
+      </button>
+    </td>
+  </tr>`;
+}
+
+// ═══════════════════════════════════════════
+//  TOGGLE
+// ═══════════════════════════════════════════
+function toggleMonth(m) {
+  document.getElementById(`month-${m}`).classList.toggle('open');
+}
+function toggleWeek(w) {
+  document.getElementById(`week-${w}`).classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════
+let currentDate = null;
+function openModal(dateStr) {
+  currentDate = dateStr;
+  const d = DAILY_DATA.find(x=>x.date===dateStr);
+  const rec = records[dateStr];
+  document.getElementById('modalTitle').textContent = '记录学习时长';
+  document.getElementById('modalDate').textContent =
+    `${dateStr}（${WD_CN[d.weekday]}）· ${PHASE_LABEL[d.phase]}`;
+  document.getElementById('modalPlan').textContent = `计划：${fmtH(d.free_h)}`;
+  document.getElementById('inputHours').value = rec?.actual_h ?? '';
+  document.getElementById('inputNote').value  = rec?.note ?? '';
+  document.getElementById('btnDelete').style.display = rec ? 'block' : 'none';
+  document.getElementById('modal').classList.add('show');
+  setTimeout(()=>document.getElementById('inputHours').focus(), 100);
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  currentDate = null;
+}
+async function saveRecord() {
+  const h = parseFloat(document.getElementById('inputHours').value);
+  const note = document.getElementById('inputNote').value.trim();
+  if(isNaN(h)||h<0||h>24){ showToast('⚠ 请输入有效时长（0-24小时）'); return; }
+  records[currentDate] = { actual_h: h, note };
+  await saveRecords();
+  rebuildDay(currentDate);
+  updateKPI();
+  closeModal();
+  showToast('✓ 记录已保存');
+}
+async function deleteRecord() {
+  if(!confirm('确定删除该天的记录？')) return;
+  delete records[currentDate];
+  await saveRecords();
+  rebuildDay(currentDate);
+  updateKPI();
+  closeModal();
+  showToast('已删除记录');
+}
+
+// 局部刷新某天的行，避免重建整个DOM
+function rebuildDay(dateStr) {
+  const d = DAILY_DATA.find(x=>x.date===dateStr);
+  const rec = records[dateStr];
+  const ah  = rec?.actual_h;
+  const note = rec?.note||'';
+  const diff = ah!=null ? ah - d.free_h : null;
+  const diffStr = diff==null ? '' :
+    Math.abs(diff)<0.05 ? '<span class="day-diff zero">±0</span>' :
+    diff>0 ? `<span class="day-diff pos">+${fmtH(diff)}</span>` :
+             `<span class="day-diff neg">${fmtH(diff)}</span>`;
+
+  // 刷新行内容
+  const btn = document.querySelector(`[onclick="openModal('${dateStr}')"]`);
+  if (!btn) return;
+  const tr  = btn.closest('tr');
+  if (!tr)  return;
+  const tds = tr.querySelectorAll('td');
+  tds[2].innerHTML = `<div class="day-actual-wrap">
+    <span class="day-actual-val${ah==null?' empty':''}">${ah!=null?fmtH(ah):'—'}</span>
+    ${diffStr}
+  </div>`;
+  if (tds[3]) tds[3].innerHTML = `<span class="day-note-preview" title="${note.replace(/"/g,'&quot;')}">${note||'<span style="color:var(--txt3);font-size:11px">暂无备注</span>'}</span>`;
+  btn.className   = `btn-record${ah!=null?' recorded':''}`;
+  btn.textContent = ah!=null ? '✏ 编辑' : '+ 记录';
+
+  // 刷新周统计（ID唯一）
+  const wDays    = DAILY_DATA.filter(x=>x.kaoyan_week===d.kaoyan_week);
+  const wPlanH   = wDays.reduce((s,x)=>s+x.free_h, 0);
+  const wActualH = wDays.reduce((s,x)=>s+(records[x.date]?.actual_h||0), 0);
+  const wstats   = document.getElementById(`wstats-${d.kaoyan_week}`);
+  if (wstats) wstats.innerHTML = renderWeekStats(wPlanH, wActualH);
+
+  // 刷新月统计（归属月 = 该周第一天的月份）
+  const allWeeks = buildWeekGroups();
+  const belongM  = allWeeks.find(wg=>wg.week===d.kaoyan_week)?.belongMonth || d.month;
+  const mWeeks   = allWeeks.filter(wg=>wg.belongMonth===belongM);
+  const mAllDays = mWeeks.flatMap(wg=>wg.days);
+  const mPlanH   = mAllDays.reduce((s,x)=>s+x.free_h, 0);
+  const mActualH = mAllDays.reduce((s,x)=>s+(records[x.date]?.actual_h||0), 0);
+  const mPhase   = mWeeks[0]?.phase||'spring';
+  const color    = PHASE_COLORS[mPhase]||'var(--p3)';
+  const calPlanH = DAILY_DATA.filter(x=>x.month===belongM).reduce((s,x)=>s+x.free_h, 0);
+  const allMs    = [...new Set(DAILY_DATA.map(x=>x.month))];
+  const maxPlanH = Math.max(...allMs.map(m=>DAILY_DATA.filter(x=>x.month===m).reduce((s,x)=>s+x.free_h,0)));
+  const mstats   = document.getElementById(`mstats-${belongM}`);
+  if (mstats) mstats.innerHTML = renderMonthStats(mPlanH, mActualH, calPlanH, maxPlanH, color);
+}
+
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.style.display='none'; }, 2200);
+}
+
+// close modal on backdrop click
+document.getElementById('modal').addEventListener('click', e=>{
+  if(e.target === document.getElementById('modal')) closeModal();
+});
+// Enter to save
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeModal();
+  if(e.key==='Enter' && e.ctrlKey && document.getElementById('modal').classList.contains('show')) saveRecord();
+});
+
+// ═══════════════════════════════════════════
+//  VIEW SWITCHING
+// ═══════════════════════════════════════════
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  document.getElementById(`nav-${name}`).classList.add('active');
+  if(name==='stats') buildStatsView();
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════
+//  TODAY VIEW
+// ═══════════════════════════════════════════
+function buildTodayView() {
+  const today = new Date();
+  const todayStr = localDateStr(today);
+  const dayData = DAILY_DATA.find(d=>d.date===todayStr);
+
+  // date banner
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('todayDateBig').textContent =
+    `${today.getMonth()+1}月${today.getDate()}日`;
+  const wdNames2 = ['周日','周一','周二','周三','周四','周五','周六'];
+  const examDate2 = new Date('2026-12-25');
+  const daysLeft = Math.ceil((examDate2-today)/(24*3600*1000));
+  const wn = dayData ? dayData.kaoyan_week : '—';
+  document.getElementById('todayDateSub').textContent =
+    `${wdNames2[today.getDay()]} · 考研第${wn}周 · 距考研${daysLeft}天`;
+
+  if(!dayData) {
+    document.getElementById('todayPlanVal').textContent = '今日不在备考范围';
+    document.getElementById('todayActualVal').textContent = '—';
+    document.getElementById('btnTodayRecord').style.display = 'none';
+    document.getElementById('twsDays').innerHTML = '';
+    return;
+  }
+
+  const rec = records[todayStr];
+  document.getElementById('todayPlanVal').textContent = fmtH(dayData.free_h);
+  if(rec?.actual_h != null) {
+    document.getElementById('todayActualVal').textContent = fmtH(rec.actual_h);
+    const pct = Math.min(100, rec.actual_h/dayData.free_h*100);
+    document.getElementById('todayBarFill').style.width = pct+'%';
+    document.getElementById('btnTodayRecord').textContent = '✏ 修改今日记录';
+    if(rec.note) {
+      document.getElementById('todayNoteCard').style.display = 'block';
+      document.getElementById('todayNoteText').textContent = rec.note;
+    }
+  } else {
+    document.getElementById('todayBarFill').style.width = '0%';
+  }
+
+  // 本周迷你条形图
+  const weekDays = DAILY_DATA.filter(d=>d.kaoyan_week===dayData.kaoyan_week);
+  const twsEl = document.getElementById('twsDays');
+  twsEl.innerHTML = '';
+  const maxH2 = Math.max(...weekDays.map(d=>d.free_h));
+  weekDays.forEach(d=>{
+    const isToday2 = d.date===todayStr;
+    const ah = records[d.date]?.actual_h;
+    const barPct = ah!=null ? Math.min(100,ah/maxH2*100) : 0;
+    const planPct = Math.min(100,d.free_h/maxH2*100);
+    const col = ah!=null
+      ? (ah>=d.free_h*0.9?'var(--green)':'var(--p3)')
+      : 'var(--bg5)';
+    twsEl.innerHTML += `
+      <div class="tws-day${isToday2?' today':''}">
+        <span class="tws-day-name">${WD_CN[d.weekday].slice(1)}</span>
+        <div class="tws-day-bar-bg" title="${d.date}">
+          <div class="tws-day-bar-fill" style="height:${ah!=null?barPct:planPct}%;background:${ah!=null?col:'var(--bg5)'}"></div>
+        </div>
+        <span class="tws-day-val">${ah!=null?fmtH(ah):fmtH(d.free_h)}</span>
+      </div>`;
+  });
+}
+
+function openTodayModal() {
+  const todayStr = localDateStr();
+  const d = DAILY_DATA.find(x=>x.date===todayStr);
+  if(d) openModal(todayStr);
+}
+
+// ═══════════════════════════════════════════
+//  STATS VIEW
+// ═══════════════════════════════════════════
+function buildStatsView() {
+  // 连续打卡
+  const today = new Date(); today.setHours(0,0,0,0);
+  let streak = 0;
+  let checkDate = new Date(today);
+  while(true) {
+    const ds = localDateStr(checkDate);
+    if(DAILY_DATA.find(d=>d.date===ds) && records[ds]?.actual_h!=null) {
+      streak++;
+      checkDate.setDate(checkDate.getDate()-1);
+    } else break;
+  }
+  document.getElementById('streakNum').textContent = streak;
+  document.getElementById('streakLabel').textContent = streak>0?'天连续记录 🔥':'暂无连续记录，今天开始吧！';
+
+  // 本月统计
+  const thisMonth = today.getMonth()+1;
+  const mDays = DAILY_DATA.filter(d=>d.month===thisMonth);
+  const mPlan = mDays.reduce((s,d)=>s+d.free_h,0);
+  const mActual = mDays.reduce((s,d)=>s+(records[d.date]?.actual_h||0),0);
+  const mRecorded = mDays.filter(d=>records[d.date]?.actual_h!=null).length;
+  const mPct = mPlan>0?(mActual/mPlan*100).toFixed(1):0;
+  document.getElementById('thisMonthStats').innerHTML = `
+    计划：<span style="color:var(--p3)">${fmtH(mPlan)}</span><br>
+    已记录：<span style="color:var(--green)">${fmtH(mActual)}</span>（${mRecorded}天）<br>
+    完成率：<span style="color:var(--gold)">${mPct}%</span>`;
+
+  // 各月完成率条形图
+  const mnMap={3:'3月',4:'4月',5:'5月',6:'6月',7:'7月',8:'8月',9:'9月',10:'10月',11:'11月',12:'12月'};
+  const phColors={pre:'var(--cyan)',spring:'var(--p3)',summer:'var(--gold)',autumn:'var(--p2)'};
+  const barsEl = document.getElementById('statsMonthBars');
+  barsEl.innerHTML='';
+  const monthNums = [...new Set(DAILY_DATA.map(d=>d.month))].sort((a,b)=>a-b);
+  monthNums.forEach(m=>{
+    const mds = DAILY_DATA.filter(d=>d.month===m);
+    const ph = mds[0]?.phase||'spring';
+    const plan = mds.reduce((s,d)=>s+d.free_h,0);
+    const actual = mds.reduce((s,d)=>s+(records[d.date]?.actual_h||0),0);
+    const pct = plan>0?Math.min(100,actual/plan*100):0;
+    const col = phColors[ph]||'var(--p3)';
+    barsEl.innerHTML+=`
+      <div class="mbar-row">
+        <div class="mbar-name">${mnMap[m]}</div>
+        <div class="mbar-bg"><div class="mbar-fill" style="width:${pct.toFixed(0)}%;background:${col}">${pct>15?pct.toFixed(0)+'%':''}</div></div>
+        <div class="mbar-val">${pct.toFixed(0)}%</div>
+      </div>`;
+  });
+
+  // 近14天折线
+  buildMiniChart();
+}
+
+function buildMiniChart() {
+  const canvas = document.getElementById('miniChart');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const today = new Date();
+  const days14 = [];
+  for(let i=13;i>=0;i--) {
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const ds = localDateStr(d);
+    const dayD = DAILY_DATA.find(x=>x.date===ds);
+    days14.push({
+      label: `${d.getMonth()+1}/${d.getDate()}`,
+      plan: dayD?.free_h||0,
+      actual: records[ds]?.actual_h??null,
+    });
+  }
+  const W = canvas.offsetWidth||300, H = 120;
+  canvas.width=W; canvas.height=H;
+  const pad={t:10,r:10,b:24,l:28};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+  const maxVal = Math.max(13, ...days14.map(d=>Math.max(d.plan,d.actual??0)));
+  const x = (i)=>pad.l+i*(pw/(days14.length-1));
+  const y = (v)=>pad.t+ph-(v/maxVal)*ph;
+
+  ctx.clearRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle='rgba(107,45,139,0.15)'; ctx.lineWidth=1;
+  [0,0.25,0.5,0.75,1].forEach(t=>{
+    ctx.beginPath(); ctx.moveTo(pad.l,pad.t+ph*t); ctx.lineTo(W-pad.r,pad.t+ph*t); ctx.stroke();
+  });
+
+  // plan line
+  ctx.beginPath(); ctx.strokeStyle='rgba(176,124,198,0.4)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  days14.forEach((d,i)=>{ i===0?ctx.moveTo(x(i),y(d.plan)):ctx.lineTo(x(i),y(d.plan)); });
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // actual line
+  const actualPoints = days14.map((d,i)=>d.actual!=null?{x:x(i),y:y(d.actual)}:null).filter(Boolean);
+  if(actualPoints.length>1) {
+    ctx.beginPath(); ctx.strokeStyle='#2ECC71'; ctx.lineWidth=2;
+    let first=true;
+    days14.forEach((d,i)=>{if(d.actual!=null){first?ctx.moveTo(x(i),y(d.actual)):ctx.lineTo(x(i),y(d.actual));first=false;}});
+    ctx.stroke();
+    // dots
+    days14.forEach((d,i)=>{
+      if(d.actual!=null){
+        ctx.beginPath(); ctx.arc(x(i),y(d.actual),3,0,Math.PI*2);
+        ctx.fillStyle='#2ECC71'; ctx.fill();
+      }
+    });
+  }
+
+  // x labels
+  ctx.fillStyle='rgba(107,45,139,0.7)'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
+  days14.forEach((d,i)=>{if(i%2===0||i===days14.length-1) ctx.fillText(d.label,x(i),H-6);});
+
+  // y labels
+  ctx.textAlign='right';
+  [0,4,8,12].forEach(v=>ctx.fillText(v+'h',pad.l-3,y(v)+3));
+}
+
+// ═══════════════════════════════════════════
+//  BACKUP / EXPORT / IMPORT
+// ═══════════════════════════════════════════
+function exportData() {
+  const json = JSON.stringify(records, null, 2);
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(json).then(()=>showToast('✓ 已复制到剪贴板！'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = json; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('✓ 已复制到剪贴板！');
+  }
+}
+function downloadData() {
+  const json = JSON.stringify(records, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`kaoyan-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('✓ 备份文件已下载');
+}
+async function importData() {
+  const raw = document.getElementById('importArea').value.trim();
+  if(!raw){ showToast('⚠ 请先粘贴备份数据'); return; }
+  try {
+    const parsed = JSON.parse(raw);
+    if(typeof parsed !== 'object'){ throw new Error('格式错误'); }
+    if(!confirm(`确定导入 ${Object.keys(parsed).length} 条记录？这将覆盖当前数据。`)) return;
+    records = parsed;
+    await saveRecords();
+    buildAccordion(); updateKPI(); buildTodayView();
+    document.getElementById('importArea').value = '';
+    showToast(`✓ 已导入 ${Object.keys(records).length} 条记录`);
+  } catch(e) { showToast('⚠ 数据格式有误，请检查'); }
+}
+async function clearAllData() {
+  if(!confirm('确定清空所有记录？此操作不可恢复！')) return;
+  if(!confirm('再次确认：将永久删除所有打卡记录。')) return;
+  records = {};
+  await saveRecords();
+  buildAccordion(); updateKPI(); buildTodayView();
+  showToast('已清空所有记录');
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+async function init() {
+  await loadRecords();
+  buildTodayView();
+  buildAccordion();
+  updateKPI();
+
+  // Auto-open current month in records view
+  const thisMonth = new Date().getMonth()+1;
+  const mBlock = document.getElementById(`month-${thisMonth}`);
+  if(mBlock) { mBlock.classList.add('open'); }
+}
+
+init();
+
+// heatmap render
+function renderHeatmap(){
+  const container=document.getElementById('heatmap');
+  if(!container) return;
+  container.innerHTML='';
+  DAILY_DATA.slice(-140).forEach(d=>{
+    const v=localStorage.getItem('rec_'+d.date);
+    const h=v?JSON.parse(v).h:0;
+    const cell=document.createElement('div');
+    const intensity=Math.min(1,h/12);
+    cell.style.height='18px';
+    cell.style.borderRadius='3px';
+    cell.style.background=`rgba(107,45,139,${0.1+0.9*intensity})`;
+    cell.title=d.date+' '+(h||0)+'h';
+    container.appendChild(cell);
+  });
+}
+document.addEventListener('DOMContentLoaded',renderHeatmap);
+
+
+// ===== 狠版本系统 =====
+
+// 配置
+const DAILY_MIN = 8; // 每天最低学习时长
+const WEEK_MIN = 56; // 每周最低
+
+function enhanceSystem(){
+  markSpecialDays();
+  checkDeficit();
+}
+
+// 标记爆发日 & 摸鱼日
+function markSpecialDays(){
+  document.querySelectorAll('#heatmap div').forEach((cell,i)=>{
+    const d = DAILY_DATA.slice(-140)[i];
+    const v = localStorage.getItem('rec_'+d.date);
+    const h = v?JSON.parse(v).h:0;
+
+    if(h>=12){
+      cell.style.boxShadow='0 0 6px rgba(232,185,79,0.8)';
+    }
+    if(h>0 && h<DAILY_MIN){
+      cell.style.outline='1px solid rgba(231,76,60,0.6)';
+    }
+  });
+}
+
+// 周欠账系统
+function checkDeficit(){
+  let weekSum=0;
+  let deficit=0;
+
+  DAILY_DATA.slice(-7).forEach(d=>{
+    const v = localStorage.getItem('rec_'+d.date);
+    const h = v?JSON.parse(v).h:0;
+    weekSum+=h;
+  });
+
+  if(weekSum < WEEK_MIN){
+    deficit = WEEK_MIN - weekSum;
+  }
+
+  let box = document.createElement('div');
+  box.style.marginTop='10px';
+  box.style.fontSize='12px';
+  box.style.fontFamily='JetBrains Mono, monospace';
+
+  if(deficit>0){
+    box.style.color='var(--red)';
+    box.innerText='⚠ 本周欠账：'+deficit.toFixed(1)+'h';
+  }else{
+    box.style.color='var(--green)';
+    box.innerText='✔ 本周达标';
+  }
+
+  const heatmap = document.getElementById('heatmap');
+  if(heatmap && !document.getElementById('deficitBox')){
+    box.id='deficitBox';
+    heatmap.parentNode.appendChild(box);
+  }
+}
+
+// 连续断更警告
+function streakWarning(){
+  let miss=0;
+  for(let i=DAILY_DATA.length-1;i>=0;i--){
+    const d=DAILY_DATA[i];
+    const v=localStorage.getItem('rec_'+d.date);
+    if(!v){
+      miss++;
+    }else break;
+  }
+
+  if(miss>=2){
+    alert('⚠ 你已经连续 '+miss+' 天未学习！');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  setTimeout(()=>{
+    enhanceSystem();
+    streakWarning();
+  },500);
+});
+
+</script>
+</body>
+</html>
